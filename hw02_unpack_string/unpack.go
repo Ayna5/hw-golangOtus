@@ -9,12 +9,13 @@ import (
 
 var ErrInvalidString = errors.New("invalid string")
 
-func Unpack(s string) (str string, err error) {
+func Unpack(s string) (string, error) {
+	var b strings.Builder
 	var prevRune rune
 	if len(s) > 0 && unicode.IsDigit([]rune(s)[0]) {
 		return "", ErrInvalidString
 	}
-	for _, r := range s {
+	for i, r := range s {
 		switch r {
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			count, err := strconv.Atoi(string(r))
@@ -25,14 +26,17 @@ func Unpack(s string) (str string, err error) {
 				return "", ErrInvalidString
 			}
 			if count > 0 {
-				str += strings.Repeat(string(prevRune), count-1)
-			} else {
-				str = strings.TrimSuffix(str, string(prevRune))
+				b.WriteString(strings.Repeat(string(prevRune), count))
 			}
 		default:
-			str += string(r)
+			if !unicode.IsDigit(prevRune) && prevRune != 0 {
+				b.WriteRune(prevRune)
+			}
+			if strings.HasSuffix(s, string(r)) && i == len(s)-len(string(r)) {
+				b.WriteRune(r)
+			}
 		}
 		prevRune = r
 	}
-	return str, nil
+	return b.String(), nil
 }

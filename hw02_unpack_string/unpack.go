@@ -32,7 +32,7 @@ func Unpack(s string) (string, error) {
 			if !unicode.IsDigit(prevRune) && prevRune != 0 {
 				b.WriteRune(prevRune)
 			}
-			if strings.HasSuffix(s, string(r)) && i == len(s)-len(string(r)) {
+			if i == len(s)-len(string(r)) {
 				b.WriteRune(r)
 			}
 		}

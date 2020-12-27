@@ -24,7 +24,7 @@ func Unpack(s string) (str string, err error) {
 			if unicode.IsDigit(prevRune) {
 				return "", ErrInvalidString
 			}
-			if !unicode.IsDigit(prevRune) && count > 0 {
+			if count > 0 {
 				str += strings.Repeat(string(prevRune), count-1)
 			} else {
 				str = strings.TrimSuffix(str, string(prevRune))

@@ -9,12 +9,11 @@ import (
 
 var ErrInvalidString = errors.New("invalid string")
 
-func Trim(s, suffix string) string {
-	return strings.TrimPrefix(s, suffix)
-}
-
 func Unpack(s string) (str string, err error) {
 	var prevRune rune
+	if len(s) > 0 && unicode.IsDigit([]rune(s)[0]) {
+		return "", ErrInvalidString
+	}
 	for _, r := range s {
 		switch r {
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
@@ -22,18 +21,16 @@ func Unpack(s string) (str string, err error) {
 			if err != nil {
 				return "", err
 			}
-			if unicode.IsDigit(prevRune) || strings.Index(s, string(r)) == 0 {
+			if unicode.IsDigit(prevRune) {
 				return "", ErrInvalidString
 			}
-			if string(prevRune) != `\` && !unicode.IsDigit(prevRune) && count > 0 {
+			if !unicode.IsDigit(prevRune) && count > 0 {
 				str += strings.Repeat(string(prevRune), count-1)
 			} else {
-				str = Trim(str, string(prevRune))
+				str = strings.TrimSuffix(str, string(prevRune))
 			}
 		default:
-			if !unicode.IsDigit(r) {
-				str += string(r)
-			}
+			str += string(r)
 		}
 		prevRune = r
 	}

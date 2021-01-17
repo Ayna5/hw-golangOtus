@@ -16,11 +16,12 @@ func Unpack(s string) (string, error) {
 		return "", ErrInvalidString
 	}
 	for i, r := range s {
+		//nolint:nestif // it should be refactored when I'll do task with asterisk
 		if unicode.IsDigit(r) {
-			count, _ := strconv.Atoi(string(r))
 			if unicode.IsDigit(prevRune) {
 				return "", ErrInvalidString
 			}
+			count, _ := strconv.Atoi(string(r))
 			if count > 0 {
 				b.WriteString(strings.Repeat(string(prevRune), count))
 			}

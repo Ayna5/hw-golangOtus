@@ -33,7 +33,6 @@ func Top10(s string) (str []string) {
 		w = strings.TrimFunc(w, func(r rune) bool {
 			return !unicode.IsDigit(r) && !unicode.IsLetter(r)
 		})
-		//w = strings.TrimSpace(w)
 		w = strings.ToLower(w)
 		if w != "" && w != "-" {
 			res[w]++

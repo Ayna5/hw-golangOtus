@@ -38,11 +38,7 @@ func Top10(s string) (str []string) {
 			return !unicode.IsLetter(r) && !unicode.IsNumber(r)
 		})
 
-		if _, ok := res[w]; ok {
-			res[w]++
-		} else {
-			res[w]++
-		}
+		res[w]++
 	}
 
 	for key, value := range res {
@@ -57,7 +53,7 @@ func Top10(s string) (str []string) {
 	i := 0
 	for _, v := range sortedStruct {
 		if i < 10 {
-		str = append(str, v.Key)
+			str = append(str, v.Key)
 		}
 		i++
 	}

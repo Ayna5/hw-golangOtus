@@ -1,6 +1,5 @@
 package hw03_frequency_analysis //nolint:golint,stylecheck
 import (
-	"fmt"
 	"regexp"
 	"sort"
 	"strings"
@@ -46,7 +45,6 @@ func Top10(s string) (str []string) {
 	sort.Slice(sortedStruct, func(i, j int) bool {
 		return sortedStruct[i].Value > sortedStruct[j].Value
 	})
-	fmt.Println(sortedStruct)
 
 	i := 0
 	for _, v := range sortedStruct {
@@ -55,6 +53,5 @@ func Top10(s string) (str []string) {
 		}
 		i++
 	}
-	fmt.Println(str)
 	return str
 }

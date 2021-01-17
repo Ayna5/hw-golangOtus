@@ -18,6 +18,9 @@ func Unpack(s string) (string, error) {
 	for i, r := range s {
 		if unicode.IsDigit(r) {
 			count, _ := strconv.Atoi(string(r))
+			if unicode.IsDigit(prevRune) {
+				return "", ErrInvalidString
+			}
 			if count > 0 {
 				b.WriteString(strings.Repeat(string(prevRune), count))
 			}

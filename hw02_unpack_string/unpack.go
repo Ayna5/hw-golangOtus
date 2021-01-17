@@ -16,19 +16,19 @@ func Unpack(s string) (string, error) {
 		return "", ErrInvalidString
 	}
 	for i, r := range s {
-		switch r {
-		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-			count, err := strconv.Atoi(string(r))
-			if err != nil {
-				return "", err
-			}
-			if unicode.IsDigit(prevRune) {
+		if unicode.IsDigit(r) {
+			if prevRune == 0 {
 				return "", ErrInvalidString
+			} else {
+				count, err := strconv.Atoi(string(r))
+				if err != nil {
+					return "", err
+				}
+				if count > 0 {
+					b.WriteString(strings.Repeat(string(prevRune), count))
+				}
 			}
-			if count > 0 {
-				b.WriteString(strings.Repeat(string(prevRune), count))
-			}
-		default:
+		} else {
 			if !unicode.IsDigit(prevRune) && prevRune != 0 {
 				b.WriteRune(prevRune)
 			}

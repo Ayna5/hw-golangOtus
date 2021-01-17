@@ -17,16 +17,9 @@ func Unpack(s string) (string, error) {
 	}
 	for i, r := range s {
 		if unicode.IsDigit(r) {
-			if prevRune == 0 {
-				return "", ErrInvalidString
-			} else {
-				count, err := strconv.Atoi(string(r))
-				if err != nil {
-					return "", err
-				}
-				if count > 0 {
-					b.WriteString(strings.Repeat(string(prevRune), count))
-				}
+			count, _ := strconv.Atoi(string(r))
+			if count > 0 {
+				b.WriteString(strings.Repeat(string(prevRune), count))
 			}
 		} else {
 			if !unicode.IsDigit(prevRune) && prevRune != 0 {

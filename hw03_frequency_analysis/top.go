@@ -1,10 +1,8 @@
 package hw03_frequency_analysis //nolint:golint,stylecheck
 import (
-	"fmt"
 	"regexp"
 	"sort"
 	"strings"
-	"unicode"
 )
 
 var compile *regexp.Regexp
@@ -30,15 +28,10 @@ func Top10(s string) (str []string) {
 	words := compile.FindAllString(s, len(s))
 
 	for _, w := range words {
-		if w == "" {
-			continue
+		w = strings.TrimSpace(w)
+		if w != "" {
+			res[w]++
 		}
-
-		w = strings.TrimFunc(w, func(r rune) bool {
-			return !unicode.IsLetter(r) && !unicode.IsNumber(r)
-		})
-
-		res[w]++
 	}
 
 	for key, value := range res {
@@ -48,7 +41,6 @@ func Top10(s string) (str []string) {
 	sort.Slice(sortedStruct, func(i, j int) bool {
 		return sortedStruct[i].Value > sortedStruct[j].Value
 	})
-	fmt.Println(sortedStruct)
 
 	i := 0
 	for _, v := range sortedStruct {
@@ -57,6 +49,5 @@ func Top10(s string) (str []string) {
 		}
 		i++
 	}
-	fmt.Println(str)
 	return str
 }

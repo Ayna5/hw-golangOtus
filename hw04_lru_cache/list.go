@@ -15,12 +15,11 @@ type listItem struct {
 	Value interface{} // значение
 	Next  *listItem   // следующий элемент
 	Prev  *listItem   // предыдущий элемент
-	list  *list
 }
 
 type list struct {
 	first, last *listItem
-	len  int
+	len         int
 }
 
 func (l *list) Len() int {

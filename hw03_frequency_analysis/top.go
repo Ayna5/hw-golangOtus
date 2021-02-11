@@ -34,7 +34,7 @@ func Top10(s string) (str []string) {
 	})
 
 	if len(sortedStruct) > 10 {
-		words(sortedStruct)
+		return words(sortedStruct[:10])
 	}
 	return words(sortedStruct)
 }

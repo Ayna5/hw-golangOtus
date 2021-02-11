@@ -43,6 +43,10 @@ var text = `Как видите, он  спускается  по  лестни�
 	посидеть у огня и послушать какую-нибудь интересную сказку.
 		В этот вечер...`
 
+var text1 = ""
+
+var text2 = "/w/d/f/vxs     sdfswe    /w /w /w sdfswe"
+
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
 		require.Len(t, Top10(""), 0)
@@ -56,5 +60,15 @@ func TestTop10(t *testing.T) {
 			expected := []string{"он", "и", "а", "что", "ты", "не", "если", "-", "то", "Кристофер"}
 			require.ElementsMatch(t, expected, Top10(text))
 		}
+	})
+
+	t.Run("empty string", func(t *testing.T) {
+		var expected []string
+		require.ElementsMatch(t, expected, Top10(text1))
+	})
+
+	t.Run("", func(t *testing.T) {
+		expected := []string{"/w", "sdfswe", "/w/d/f/vxs"}
+		require.ElementsMatch(t, expected, Top10(text2))
 	})
 }

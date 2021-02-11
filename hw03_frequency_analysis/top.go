@@ -3,7 +3,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"unicode"
 )
 
 var compile *regexp.Regexp
@@ -15,24 +14,15 @@ type keyValue struct {
 
 var sortedStruct []keyValue
 
-func init() {
-	pattern := ` ?(\S+.?) ?`
-	compile = regexp.MustCompile(pattern)
-}
-
 func Top10(s string) (str []string) {
-	res := make(map[string]int)
 	if s == "" {
 		return []string{}
 	}
+	res := make(map[string]int)
 
-	words := compile.FindAllString(s, len(s))
-
-	for _, w := range words {
-		w = strings.TrimFunc(w, func(r rune) bool {
-			return !unicode.IsDigit(r) && !unicode.IsLetter(r)
-		})
-		w = strings.ToLower(w)
+	ww := strings.Fields(s)
+	for _, val := range ww {
+		w := strings.ToLower(val)
 		if w != "" && w != "-" {
 			res[w]++
 		}
@@ -46,11 +36,16 @@ func Top10(s string) (str []string) {
 		return sortedStruct[i].Value > sortedStruct[j].Value
 	})
 
-	i := 0
-	for _, v := range sortedStruct {
-		if i < 10 {
-			str = append(str, v.Key)
-		}
+	if len(sortedStruct) > 10 {
+		words(sortedStruct)
+	}
+	return words(sortedStruct)
+}
+
+func words(arr []keyValue) []string {
+	str := make([]string, 0, len(arr))
+	for i, v := range arr {
+		str = append(str, v.Key)
 		i++
 	}
 	return str

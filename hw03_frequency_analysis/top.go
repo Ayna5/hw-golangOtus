@@ -1,11 +1,8 @@
 package hw03_frequency_analysis //nolint:golint,stylecheck
 import (
-	"regexp"
 	"sort"
 	"strings"
 )
-
-var compile *regexp.Regexp
 
 type keyValue struct {
 	Key   string
@@ -44,9 +41,8 @@ func Top10(s string) (str []string) {
 
 func words(arr []keyValue) []string {
 	str := make([]string, 0, len(arr))
-	for i, v := range arr {
+	for _, v := range arr {
 		str = append(str, v.Key)
-		i++
 	}
 	return str
 }

@@ -1,5 +1,8 @@
 package hw04_lru_cache //nolint:golint,stylecheck
-import "sync"
+import (
+	"errors"
+	"sync"
+)
 
 type Key string
 
@@ -66,14 +69,14 @@ type cacheItem struct {
 	value interface{}
 }
 
-func NewCache(capacity int) Cache {
+func NewCache(capacity int) (Cache, error) {
 	if capacity > 0 {
 		return &lruCache{
 			capacity: capacity,
 			queue:    &list{},
 			items:    make(map[Key]*listItem),
 			mx:       &sync.Mutex{},
-		}
+		}, nil
 	}
-	return nil
+	return nil, errors.New("cannot execute NewCache: capacity must be greater than 0")
 }

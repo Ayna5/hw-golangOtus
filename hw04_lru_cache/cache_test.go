@@ -65,6 +65,29 @@ func TestCache(t *testing.T) {
 		require.False(t, ok)
 		require.Nil(t, val)
 	})
+
+	t.Run("pushing out rarely used elements", func(t *testing.T) {
+		c := NewCache(3)
+
+		wasInCache := c.Set("aaa", 1)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("bbb", 2)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("ccc", 3)
+		require.False(t, wasInCache)
+		c.Get("aaa")
+		c.Set("ccc", 6)
+		c.Set("aaa", 25)
+		c.Get("aaa")
+		c.Get("ccc")
+
+		wasInCache = c.Set("ddd", 444)
+		require.False(t, wasInCache)
+
+		val, ok := c.Get("bbb")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
 }
 
 func TestCacheMultithreading(t *testing.T) {

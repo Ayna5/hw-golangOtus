@@ -27,16 +27,10 @@ func (l *list) Len() int {
 }
 
 func (l *list) Front() *listItem {
-	if l.len == 0 {
-		return nil
-	}
 	return l.first
 }
 
 func (l *list) Back() *listItem {
-	if l.len == 0 {
-		return nil
-	}
 	return l.last
 }
 

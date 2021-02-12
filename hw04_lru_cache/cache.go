@@ -67,10 +67,13 @@ type cacheItem struct {
 }
 
 func NewCache(capacity int) Cache {
-	return &lruCache{
-		capacity: capacity,
-		queue:    &list{},
-		items:    make(map[Key]*listItem),
-		mx:       &sync.Mutex{},
+	if capacity > 0 {
+		return &lruCache{
+			capacity: capacity,
+			queue:    &list{},
+			items:    make(map[Key]*listItem),
+			mx:       &sync.Mutex{},
+		}
 	}
+	return nil
 }

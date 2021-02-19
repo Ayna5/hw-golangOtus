@@ -5,6 +5,7 @@ import (
 )
 
 type Key string
+const ErrCache = "cannot execute NewCache: capacity must be greater than 0"
 
 type Cache interface {
 	Set(key Key, value interface{}) bool // Добавить значение в кэш по ключу
@@ -78,5 +79,5 @@ func NewCache(capacity int) (Cache, error) {
 			mx:       &sync.Mutex{},
 		}, nil
 	}
-	return nil, errors.New("cannot execute NewCache: capacity must be greater than 0")
+	return nil, errors.New(ErrCache)
 }

@@ -12,7 +12,7 @@ import (
 func TestCache(t *testing.T) {
 	t.Run("capacity = 0 should be return error", func(t *testing.T) {
 		c, err := NewCache(0)
-		require.Error(t, err)
+		require.EqualError(t, err, ErrCache)
 		require.Nil(t, c)
 	})
 

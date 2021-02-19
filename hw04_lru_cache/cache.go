@@ -5,6 +5,7 @@ import (
 )
 
 type Key string
+
 const ErrCache = "cannot execute NewCache: capacity must be greater than 0"
 
 type Cache interface {

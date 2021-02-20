@@ -1,4 +1,4 @@
-package hw04_lru_cache //nolint:golint,stylecheck
+package hw04_lru_cache //nolint:golint,stylecheck,revive
 import (
 	"errors"
 	"sync"

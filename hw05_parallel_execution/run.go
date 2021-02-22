@@ -1,4 +1,4 @@
-package hw05_parallel_execution //nolint:golint,stylecheck,revive
+package hw05_parallel_execution //nolint:golint,stylecheck
 
 import (
 	"context"
@@ -19,12 +19,12 @@ type Workers struct {
 
 type Task func() error
 
-// Run starts tasks in N goroutines and stops its work when receiving M errors from tasks
-func Run(tasks []Task, N int, M int) error {
+// Run starts tasks in N goroutines and stops its work when receiving M errors from tasks.
+func Run(tasks []Task, n int, m int) error {
 	// Place your code here
 	workers := Workers{
-		countGoroutines: N,
-		maxErrCount:     M,
+		countGoroutines: n,
+		maxErrCount:     m,
 		tasks:           tasks,
 		mu:              &sync.Mutex{},
 	}

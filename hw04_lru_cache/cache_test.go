@@ -10,8 +10,15 @@ import (
 )
 
 func TestCache(t *testing.T) {
+	t.Run("capacity = 0 should be return error", func(t *testing.T) {
+		c, err := NewCache(0)
+		require.EqualError(t, err, ErrCache)
+		require.Nil(t, c)
+	})
+
 	t.Run("empty cache", func(t *testing.T) {
-		c := NewCache(10)
+		c, err := NewCache(10)
+		require.NoError(t, err, "cannot get NewCache")
 
 		_, ok := c.Get("aaa")
 		require.False(t, ok)
@@ -21,7 +28,8 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("simple", func(t *testing.T) {
-		c := NewCache(5)
+		c, err := NewCache(5)
+		require.NoError(t, err, "cannot get NewCache")
 
 		wasInCache := c.Set("aaa", 100)
 		require.False(t, wasInCache)
@@ -50,14 +58,54 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c, err := NewCache(3)
+		require.NoError(t, err, "cannot get NewCache")
+
+		wasInCache := c.Set("aaa", 1)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("bbb", 2)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("ccc", 3)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("ddd", 4)
+		require.False(t, wasInCache)
+
+		val, ok := c.Get("aaa")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
+
+	t.Run("pushing out rarely used elements", func(t *testing.T) {
+		c, err := NewCache(3)
+		require.NoError(t, err, "cannot get NewCache")
+
+		wasInCache := c.Set("aaa", 1)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("bbb", 2)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("ccc", 3)
+		require.False(t, wasInCache)
+		c.Get("aaa")
+		c.Set("ccc", 6)
+		c.Set("aaa", 25)
+		c.Get("aaa")
+		c.Get("ccc")
+
+		wasInCache = c.Set("ddd", 444)
+		require.False(t, wasInCache)
+
+		val, ok := c.Get("bbb")
+		require.False(t, ok)
+		require.Nil(t, val)
 	})
 }
 
 func TestCacheMultithreading(t *testing.T) {
-	t.Skip() // NeedRemove if task with asterisk completed
+	//t.Skip() // NeedRemove if task with asterisk completed
 
-	c := NewCache(10)
+	c, err := NewCache(10)
+	require.NoError(t, err, "cannot get NewCache")
+
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 

@@ -14,35 +14,44 @@ var (
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 )
 
-func openFile(fromPath string) (*os.File, error) {
-	from, err := os.OpenFile(fromPath, os.O_RDONLY, os.ModeDir)
-	if err != nil {
-		return nil, errors.Wrapf(err, "cannot open file for path: %s", fromPath)
-	}
-	return from, nil
-}
-
-func Copy(fromPath, toPath string, offset, limit int64) error {
+func stat(fromPath string, offset int64) (os.FileInfo, error) {
 	fromStat, err := os.Stat(fromPath)
 	if err != nil {
-		return errors.Wrapf(err, "cannot get file stat for path: %s", fromPath)
+		return nil, errors.Wrapf(err, "cannot get file stat for path: %s", fromPath)
 	}
 
 	if fromStat.Size() == 0 {
-		return ErrUnsupportedFile
+		return nil, ErrUnsupportedFile
 	}
 
 	if fromStat.Size() <= offset {
-		return ErrOffsetExceedsFileSize
+		return nil, ErrOffsetExceedsFileSize
+	}
+	return fromStat, nil
+}
+
+func Copy(fromPath, toPath string, offset, limit int64) error {
+	//fromStat, err := os.Stat(fromPath)
+	//if err != nil {
+	//	return errors.Wrapf(err, "cannot get file stat for path: %s", fromPath)
+	//}
+	//
+	//if fromStat.Size() == 0 {
+	//	return ErrUnsupportedFile
+	//}
+	//
+	//if fromStat.Size() <= offset {
+	//	return ErrOffsetExceedsFileSize
+	//}
+
+	fromStat, err := stat(fromPath, offset)
+	if err != nil {
+		return nil
 	}
 
-	// from, err := os.OpenFile(fromPath, os.O_RDONLY, os.ModeDir)
-	// if err != nil {
-	//	return errors.Wrapf(err, "cannot open file for path: %s", fromPath)
-	// }
-	from, err := openFile(fromPath)
+	from, err := os.OpenFile(fromPath, os.O_RDONLY, os.ModeDir)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "cannot open file for path: %s", fromPath)
 	}
 	defer from.Close()
 

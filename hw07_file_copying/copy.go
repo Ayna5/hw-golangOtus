@@ -14,6 +14,14 @@ var (
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 )
 
+func openFile(fromPath string) (*os.File, error) {
+	from, err := os.OpenFile(fromPath, os.O_RDONLY, os.ModeDir)
+	if err != nil {
+		return nil, errors.Wrapf(err, "cannot open file for path: %s", fromPath)
+	}
+	return from, nil
+}
+
 func Copy(fromPath, toPath string, offset, limit int64) error {
 	fromStat, err := os.Stat(fromPath)
 	if err != nil {
@@ -28,9 +36,13 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		return ErrOffsetExceedsFileSize
 	}
 
-	from, err := os.OpenFile(fromPath, os.O_RDONLY, os.ModeDir)
+	// from, err := os.OpenFile(fromPath, os.O_RDONLY, os.ModeDir)
+	// if err != nil {
+	//	return errors.Wrapf(err, "cannot open file for path: %s", fromPath)
+	// }
+	from, err := openFile(fromPath)
 	if err != nil {
-		return errors.Wrapf(err, "cannot open file for path: %s", fromPath)
+		return err
 	}
 	defer from.Close()
 

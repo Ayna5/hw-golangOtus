@@ -60,10 +60,10 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 			break
 		}
 		written, err := io.CopyN(to, from, chunk)
+		if errors.Is(err, io.EOF) {
+			break
+		}
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				break
-			}
 			return errors.Wrapf(err, "cannot execute io.CopyN")
 		}
 		bar.Add64(written)

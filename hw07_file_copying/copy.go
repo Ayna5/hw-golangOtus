@@ -30,20 +30,8 @@ func stat(fromPath string, offset int64) (os.FileInfo, error) {
 	return fromStat, nil
 }
 
+//nolint:cyclop
 func Copy(fromPath, toPath string, offset, limit int64) error {
-	//fromStat, err := os.Stat(fromPath)
-	//if err != nil {
-	//	return errors.Wrapf(err, "cannot get file stat for path: %s", fromPath)
-	//}
-	//
-	//if fromStat.Size() == 0 {
-	//	return ErrUnsupportedFile
-	//}
-	//
-	//if fromStat.Size() <= offset {
-	//	return ErrOffsetExceedsFileSize
-	//}
-
 	fromStat, err := stat(fromPath, offset)
 	if err != nil {
 		return nil

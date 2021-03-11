@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 func main() {
@@ -14,7 +16,7 @@ func main() {
 	d := os.Args[1]
 	env, err := ReadDir(d)
 	if err != nil {
-		fmt.Print("can't get environment variables from dir %v: %v\n", d, err)
+		errors.Wrapf(err, "can't get environment variables from dir %v:", d)
 		os.Exit(1)
 	}
 

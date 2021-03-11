@@ -36,7 +36,7 @@ func ReadDir(dir string) (Environment, error) {
 		if strings.Contains(file.Name(), "=") {
 			continue
 		}
-		openFile, err := os.OpenFile(dir + "/" + file.Name(), os.O_RDONLY, os.ModeDir)
+		openFile, err := os.OpenFile(dir+"/"+file.Name(), os.O_RDONLY, os.ModeDir)
 		if err != nil {
 			return nil, errors.Wrapf(err, "cannot open file for path: %s", file.Name())
 		}

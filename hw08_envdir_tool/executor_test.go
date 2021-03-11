@@ -13,7 +13,6 @@ func TestRunCmd(t *testing.T) {
 		env["FOO"] = EnvValue{Value: "foo"}
 		env["BAR"] = EnvValue{Value: "bar"}
 		env["ADDED"] = EnvValue{Value: "added"}
-		env["EMPTY"] = EnvValue{}
 
 		code := RunCmd(cmd, env)
 

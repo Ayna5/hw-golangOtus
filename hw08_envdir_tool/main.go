@@ -7,14 +7,14 @@ import (
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Println("directory is not exist")
+		fmt.Print("directory is not exist")
 		os.Exit(1)
 	}
 
 	d := os.Args[1]
 	env, err := ReadDir(d)
 	if err != nil {
-		fmt.Printf("can't get environment variables from dir %v: %v\n", d, err)
+		fmt.Print("can't get environment variables from dir %v: %v\n", d, err)
 		os.Exit(1)
 	}
 

@@ -118,7 +118,7 @@ func validateValue(tag, field string, v reflect.Value) ValidationErrors {
 
 func stringValidators(tag, field, value string) []stringValidator {
 	validatorsRaw := strings.Split(tag, "|")
-	validators := make([]stringValidator, len(validatorsRaw))
+	validators := make([]stringValidator, 0)
 
 	for _, valRaw := range validatorsRaw {
 		val := strings.Split(valRaw, ":")
@@ -161,17 +161,10 @@ func (sv stringValidator) validate() *ValidationError {
 		}
 
 	case "regexp":
-		matched, err := regexp.MatchString(sv.condition, sv.value)
+		err := sv.regex()
 		if err != nil {
-			return &ValidationError{Field: sv.field, Err: err}
+			return err
 		}
-		if !matched {
-			return &ValidationError{
-				Field: sv.field,
-				Err:   fmt.Errorf("%w: %s", ErrNotMatchRegexp, sv.condition),
-			}
-		}
-
 	case "in":
 		set := strings.Split(sv.condition, ",")
 		for _, e := range set {
@@ -190,9 +183,23 @@ func (sv stringValidator) validate() *ValidationError {
 	return nil
 }
 
+func (sv stringValidator) regex() *ValidationError {
+	matched, err := regexp.MatchString(sv.condition, sv.value)
+	if err != nil {
+		return &ValidationError{Field: sv.field, Err: err}
+	}
+	if !matched {
+		return &ValidationError{
+			Field: sv.field,
+			Err:   fmt.Errorf("%w: %s", ErrNotMatchRegexp, sv.condition),
+		}
+	}
+	return nil
+}
+
 func intValidators(tag, field string, value int) []intValidator {
 	validatorsRaw := strings.Split(tag, "|")
-	validators := make([]intValidator, len(validatorsRaw))
+	validators := make([]intValidator, 0)
 
 	for _, valRaw := range validatorsRaw {
 		val := strings.Split(valRaw, ":")
@@ -247,23 +254,30 @@ func (iv intValidator) Validate() *ValidationError {
 		}
 
 	case "in":
-		set := strings.Split(iv.condition, ",")
-		for _, val := range set {
-			intVal, err := strconv.Atoi(val)
-			if err != nil {
-				log.Println("set's value is not int")
-				return nil
-			}
-			if iv.value == intVal {
-				return nil
-			}
-		}
-		return &ValidationError{
-			Field: iv.field,
-			Err:   fmt.Errorf("%w: value %d, set %v", ErrNotIncludedInSet, iv.value, set),
+		err := iv.in()
+		if err != nil {
+			return err
 		}
 	default:
 		log.Printf("unknown validator's name %s", iv.name)
 	}
 	return nil
+}
+
+func (iv intValidator) in() *ValidationError {
+	set := strings.Split(iv.condition, ",")
+	for _, val := range set {
+		intVal, err := strconv.Atoi(val)
+		if err != nil {
+			log.Println("set's value is not int")
+			return nil
+		}
+		if iv.value == intVal {
+			return nil
+		}
+	}
+	return &ValidationError{
+		Field: iv.field,
+		Err:   fmt.Errorf("%w: value %d, set %v", ErrNotIncludedInSet, iv.value, set),
+	}
 }

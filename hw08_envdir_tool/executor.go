@@ -1,6 +1,7 @@
-package main
+package main //nolint:forbidigo
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -10,7 +11,7 @@ import (
 // RunCmd runs a command + arguments (cmd) with environment variables from env.
 func RunCmd(cmd []string, env Environment) (returnCode int) {
 	if len(cmd) == 0 {
-		errors.New("cmd length must be greater than 0")
+		fmt.Println(errors.New("cmd length must be greater than 0"))
 		return 1
 	}
 	for key, val := range env {
@@ -26,7 +27,7 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	c.Stdin = os.Stdin
 	c.Env = os.Environ()
 	if err := c.Run(); err != nil {
-		errors.New(err.Error())
+		fmt.Println(errors.New(err.Error()))
 		os.Exit(1)
 		return 1
 	}

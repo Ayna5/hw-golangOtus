@@ -1,4 +1,4 @@
-package main
+package main //nolint:forbidigo
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ func main() {
 	d := os.Args[1]
 	env, err := ReadDir(d)
 	if err != nil {
-		errors.Wrapf(err, "can't get environment variables from dir %v:", d)
+		fmt.Println(errors.Wrapf(err, "can't get environment variables from dir %v:", d))
 		os.Exit(1)
 	}
 

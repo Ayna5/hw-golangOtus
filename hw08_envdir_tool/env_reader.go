@@ -58,6 +58,9 @@ func ReadDir(dir string) (Environment, error) {
 			delete(res, file.Name())
 			continue
 		}
+		if res == nil {
+			res = make(Environment)
+		}
 		res[file.Name()] = EnvValue{Value: string(str1)}
 	}
 	return res, nil

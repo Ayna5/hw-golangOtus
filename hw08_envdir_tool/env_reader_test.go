@@ -9,6 +9,7 @@ import (
 func TestReadDir(t *testing.T) {
 	t.Run("test is valid", func(t *testing.T) {
 		expectedEnv := make(Environment)
+		expectedEnv["ADDED"] = EnvValue{Value: "from original env"}
 		expectedEnv["BAR"] = EnvValue{Value: "bar"}
 		expectedEnv["FOO"] = EnvValue{Value: "   foo\nwith new line"}
 		expectedEnv["HELLO"] = EnvValue{Value: "\"hello\""}

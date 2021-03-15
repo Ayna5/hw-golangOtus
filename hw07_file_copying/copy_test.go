@@ -100,6 +100,19 @@ func TestCopy_Valid(t *testing.T) {
 	}
 }
 
+func Test_test(t *testing.T) {
+	t.Run("limit more than file size", func(t *testing.T) {
+		setup(t, 0, 10000000000000)
+		err := Copy("testdata/input.txt", outPath, 0, 10000000000000)
+		require.NoError(t, err)
+	})
+	t.Run("offset more than file size", func(t *testing.T) {
+		setup(t, 10000000000000, 0)
+		err := Copy("testdata/input.txt", outPath, 10000000000000, 0)
+		require.Error(t, err)
+	})
+}
+
 func TestCopy_InValid(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -110,8 +123,15 @@ func TestCopy_InValid(t *testing.T) {
 		err      error
 	}{
 		{
-			name:     "test case when returns error unsupported file",
+			name:     "test case when returns error file not found",
 			fromPath: "testdata/input1.txt",
+			offset:   1,
+			limit:    0,
+			err:      errors.New("file not found"),
+		},
+		{
+			name:     "test case when returns error unsupported file",
+			fromPath: "testdata/input1.qqq",
 			offset:   1,
 			limit:    0,
 			err:      ErrUnsupportedFile,

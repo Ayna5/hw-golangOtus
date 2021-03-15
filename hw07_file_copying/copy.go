@@ -24,7 +24,7 @@ func stat(fromPath string, offset int64) (os.FileInfo, error) {
 		return nil, ErrUnsupportedFile
 	}
 
-	if fromStat.Size() <= offset {
+	if offset > fromStat.Size() {
 		return nil, ErrOffsetExceedsFileSize
 	}
 	return fromStat, nil
@@ -34,7 +34,11 @@ func stat(fromPath string, offset int64) (os.FileInfo, error) {
 func Copy(fromPath, toPath string, offset, limit int64) error {
 	fromStat, err := stat(fromPath, offset)
 	if err != nil {
-		return nil
+		return err
+	}
+
+	if fromStat.Size() <= 0 {
+		return errors.New("unknown length")
 	}
 
 	from, err := os.OpenFile(fromPath, os.O_RDONLY, os.ModeDir)

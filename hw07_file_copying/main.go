@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 )
 
@@ -19,6 +20,12 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	if from == "" || to == "" {
+		fmt.Printf("cannot be empty from: %s, to: %s", from, to)
+		return
+	}
+
 	err := Copy(from, to, offset, limit)
 	if err != nil {
 		log.Fatalf("cannot execute Copy: %v", err)

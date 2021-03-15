@@ -43,6 +43,10 @@ func ReadDir(dir string) (Environment, error) {
 
 		r := bufio.NewReader(openFile)
 		l, _, err := r.ReadLine()
+		if strings.Contains(file.Name(), "EMPTY") {
+			res[file.Name()] = EnvValue{Value: ""}
+			continue
+		}
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				res[file.Name()] = EnvValue{Value: ""}

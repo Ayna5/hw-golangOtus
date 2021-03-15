@@ -11,6 +11,7 @@ func TestReadDir(t *testing.T) {
 		expectedEnv := make(Environment)
 		expectedEnv["ADDED"] = EnvValue{Value: "from original env"}
 		expectedEnv["BAR"] = EnvValue{Value: "bar"}
+		expectedEnv["EMPTY"] = EnvValue{Value: ""}
 		expectedEnv["FOO"] = EnvValue{Value: "   foo\nwith new line"}
 		expectedEnv["HELLO"] = EnvValue{Value: "\"hello\""}
 		expectedEnv["UNSET"] = EnvValue{Value: ""}

@@ -1,4 +1,4 @@
-package main //nolint:forbidigo
+package main
 
 import (
 	"fmt"

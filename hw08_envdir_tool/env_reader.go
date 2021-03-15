@@ -22,6 +22,7 @@ type EnvValue struct {
 
 // ReadDir reads a specified directory and returns map of env variables.
 // Variables represented as files where filename is name of variable, file first line is a value.
+//nolint:cyclop
 func ReadDir(dir string) (Environment, error) {
 	fileInfo, err := ioutil.ReadDir(dir)
 	if err != nil {

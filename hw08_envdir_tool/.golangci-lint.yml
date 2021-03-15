@@ -1,4 +1,0 @@
-linters:
-  disable:
-    - forbidigo
-  disable-all: false

@@ -87,6 +87,7 @@ func TestCopy_Valid(t *testing.T) {
 			defer os.RemoveAll(tmpDir)
 			setup(t, tt.offset, tt.limit)
 			err := Copy(tt.fromPath, outPath, tt.offset, tt.limit)
+			require.Nil(t, err)
 
 			expected, err := ioutil.ReadFile("testdata/" + tt.toPath)
 			require.NoError(t, err)
@@ -95,7 +96,6 @@ func TestCopy_Valid(t *testing.T) {
 			require.NoError(t, err)
 
 			require.Equal(t, expected, actual)
-			require.Nil(t, err)
 		})
 	}
 }

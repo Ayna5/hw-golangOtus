@@ -43,11 +43,12 @@ func ReadDir(dir string) (Environment, error) {
 		}
 
 		r := bufio.NewReader(openFile)
-		l, _, err := r.ReadLine()
-		if strings.Contains(file.Name(), "EMPTY") {
-			res[file.Name()] = EnvValue{Value: ""}
+		if r.Size() == 0 {
+			delete(res, file.Name())
 			continue
 		}
+
+		l, _, err := r.ReadLine()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				res[file.Name()] = EnvValue{Value: ""}
@@ -59,13 +60,6 @@ func ReadDir(dir string) (Environment, error) {
 
 		str := bytes.TrimRight(l, " \t")
 		str1 := bytes.ReplaceAll(str, []byte("\x00"), []byte("\n"))
-		if len(str1) == 0 {
-			delete(res, file.Name())
-			continue
-		}
-		if res == nil {
-			res = make(Environment)
-		}
 		res[file.Name()] = EnvValue{Value: string(str1)}
 	}
 	return res, nil

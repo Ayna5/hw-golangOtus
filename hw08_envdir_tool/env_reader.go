@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -37,21 +38,17 @@ func ReadDir(dir string) (Environment, error) {
 		if strings.Contains(file.Name(), "=") {
 			continue
 		}
-		openFile, err := os.OpenFile(dir+"/"+file.Name(), os.O_RDONLY, os.ModeDir)
+		openFile, err := os.OpenFile(filepath.Join(dir, file.Name()), os.O_RDONLY, os.ModeDir)
 		if err != nil {
 			return nil, errors.Wrapf(err, "cannot open file for path: %s", file.Name())
 		}
 
 		r := bufio.NewReader(openFile)
-		if r.Size() == 0 {
-			delete(res, file.Name())
-			continue
-		}
-
 		l, _, err := r.ReadLine()
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				res[file.Name()] = EnvValue{Value: ""}
+			if err == io.EOF {
+				res[file.Name()] = EnvValue{Value: "", NeedRemove: true}
+				openFile.Close()
 				continue
 			}
 			openFile.Close()
@@ -60,6 +57,12 @@ func ReadDir(dir string) (Environment, error) {
 
 		str := bytes.TrimRight(l, " \t")
 		str1 := bytes.ReplaceAll(str, []byte("\x00"), []byte("\n"))
+		if len(str1) == 0 {
+			delete(res, file.Name())
+			res[file.Name()] = EnvValue{NeedRemove: true}
+			openFile.Close()
+			continue
+		}
 		res[file.Name()] = EnvValue{Value: string(str1)}
 	}
 	return res, nil

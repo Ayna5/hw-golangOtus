@@ -17,6 +17,7 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	for key, val := range env {
 		err := os.Setenv(key, val.Value)
 		if err != nil {
+			fmt.Println(errors.WithMessage(err, "cannot execute Setenv"))
 			return 1
 		}
 	}
@@ -27,8 +28,7 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	c.Stdin = os.Stdin
 	c.Env = os.Environ()
 	if err := c.Run(); err != nil {
-		fmt.Println(errors.New(err.Error())) // permit:fmt.Println
-		os.Exit(1)
+		fmt.Println(errors.New(err.Error()))
 		return 1
 	}
 	return 0

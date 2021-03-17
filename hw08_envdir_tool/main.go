@@ -9,14 +9,14 @@ import (
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Print("directory is not exist") // permit:fmt.Print
+		fmt.Print("directory is not exist")
 		os.Exit(1)
 	}
 
 	d := os.Args[1]
 	env, err := ReadDir(d)
 	if err != nil {
-		fmt.Println(errors.Wrapf(err, "can't get environment variables from dir %v:", d)) // permit:fmt.Println
+		fmt.Println(errors.WithMessage(err, "can't get environment variables from dir"))
 		os.Exit(1)
 	}
 

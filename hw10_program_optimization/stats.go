@@ -1,4 +1,4 @@
-package hw10_program_optimization //nolint:golint,stylecheck
+package hw10_program_optimization //nolint:golint,stylecheck, revive
 
 import (
 	"bufio"

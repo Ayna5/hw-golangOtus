@@ -1,4 +1,4 @@
-module github.com/fixme_my_friend/hw10_program_optimization
+module github.com/Ayna5/hw-golangOtus/hw10_program_optimization
 
 go 1.15
 

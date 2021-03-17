@@ -1,4 +1,4 @@
-package hw10_program_optimization //nolint:golint,stylecheck, revive
+package hw10_program_optimization //nolint:golint,stylecheck,revive
 
 import (
 	"bufio"
@@ -35,7 +35,7 @@ func countDomains(r io.Reader, domain string) (DomainStat, error) {
 	for {
 		line, _, err := rr.ReadLine()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			return nil, err

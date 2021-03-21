@@ -2,10 +2,11 @@ package hw10_program_optimization //nolint:golint,stylecheck,revive
 
 import (
 	"bufio"
-	"encoding/json"
 	"errors"
 	"io"
 	"strings"
+
+	"github.com/valyala/fastjson"
 )
 
 type User struct {
@@ -40,12 +41,9 @@ func countDomains(r io.Reader, domain string) (DomainStat, error) {
 			}
 			return nil, err
 		}
-		err = json.Unmarshal(line, &user)
-		if err != nil {
-			return nil, err
-		}
-		if strings.Contains(user.Email, domain) {
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]++
+		email := fastjson.GetString(line, "Email")
+		if strings.Contains(email, domain) {
+			result[strings.ToLower(strings.SplitN(email, "@", 2)[1])]++
 		}
 	}
 	return result, nil

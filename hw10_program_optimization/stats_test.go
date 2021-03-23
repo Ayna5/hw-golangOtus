@@ -1,6 +1,6 @@
 // +build !bench
 
-package hw10_program_optimization //nolint:golint,stylecheck
+package hw10_program_optimization //nolint:golint,stylecheck,revive
 
 import (
 	"bytes"
@@ -35,5 +35,11 @@ func TestGetDomainStat(t *testing.T) {
 		result, err := GetDomainStat(bytes.NewBufferString(data), "unknown")
 		require.NoError(t, err)
 		require.Equal(t, DomainStat{}, result)
+	})
+
+	t.Run("domain is empty", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(data), "")
+		require.Nil(t, result)
+		require.Error(t, err)
 	})
 }

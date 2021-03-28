@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
 	"time"
 )
 
@@ -22,19 +24,20 @@ func init() {
 func main() {
 	flag.Parse()
 
-	addr := net.JoinHostPort(host, port)
-	client := NewTelnetClient(addr, timeout, os.Stdin, os.Stdout)
+	ctx, cancel := context.WithCancel(context.Background())
 
-	err := client.Connect()
-	if err != nil {
-		fmt.Errorf("cannot connect: %w", err)
+	addr := net.JoinHostPort(host, port)
+	client := NewTelnetClient(addr, timeout, os.Stdin, os.Stdout, cancel)
+
+	if err := client.Connect(); err != nil {
+		fmt.Println(fmt.Errorf("cannot connect: %w", err))
 	}
 	defer client.Close()
 
 	go func() {
 		err := client.Receive()
 		if err != nil {
-			fmt.Errorf("can't receieve: %v", err)
+			fmt.Errorf("can't receieve: %w", err)
 			return
 		}
 	}()
@@ -42,8 +45,18 @@ func main() {
 	go func() {
 		err := client.Send()
 		if err != nil {
-			fmt.Errorf("can't send: %v", err)
+			fmt.Errorf("can't send: %w", err)
 			return
 		}
 	}()
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+
+	select {
+	case <-sig:
+		cancel()
+	case <-ctx.Done():
+		close(sig)
+	}
 }

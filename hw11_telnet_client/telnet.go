@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -20,30 +21,31 @@ type telnetClient struct {
 	in      io.ReadCloser
 	out     io.Writer
 	conn    net.Conn
+	cancel  context.CancelFunc
 }
 
 func (t telnetClient) Connect() error {
 	conn, err := net.DialTimeout("tcp", t.address, t.timeout)
 	if err != nil {
-		return fmt.Errorf("cannot connect: %v", err)
+		return fmt.Errorf("cannot connect: %w", err)
 	}
 	t.conn = conn
 	return nil
 }
 
 func (t telnetClient) Send() error {
-	_, err := io.Copy(t.conn, t.in)
-	if err != nil {
+	if _, err := io.Copy(t.conn, t.in); err != nil {
 		return fmt.Errorf("cannot send: %w", err)
 	}
+	t.cancel()
 	return nil
 }
 
 func (t telnetClient) Receive() error {
-	_, err := io.Copy(t.out, t.conn)
-	if err != nil {
+	if _, err := io.Copy(t.out, t.conn); err != nil {
 		return fmt.Errorf("cannot receive: %w", err)
 	}
+	t.cancel()
 	return nil
 }
 
@@ -54,11 +56,12 @@ func (t telnetClient) Close() error {
 	return nil
 }
 
-func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer) TelnetClient {
+func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer, cancel context.CancelFunc) TelnetClient {
 	return &telnetClient{
 		address: address,
 		timeout: timeout,
 		in:      in,
 		out:     out,
+		cancel:  cancel,
 	}
 }

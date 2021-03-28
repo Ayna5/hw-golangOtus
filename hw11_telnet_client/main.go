@@ -12,13 +12,10 @@ import (
 
 var (
 	timeout    time.Duration
-	host, port string
 )
 
 func init() {
 	flag.DurationVar(&timeout, "timeout", 10*time.Second, "timeout")
-	flag.StringVar(&host, "host", "localhost", "host")
-	flag.StringVar(&port, "port", "9000", "port")
 }
 
 func main() {
@@ -26,7 +23,7 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	addr := net.JoinHostPort(host, port)
+	addr := net.JoinHostPort(flag.Arg(0), flag.Arg(1))
 	client := NewTelnetClient(addr, timeout, os.Stdin, os.Stdout, cancel)
 
 	if err := client.Connect(); err != nil {

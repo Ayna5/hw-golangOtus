@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	timeout    time.Duration
+	timeout time.Duration
 )
 
 func init() {
@@ -34,7 +34,7 @@ func main() {
 	go func() {
 		err := client.Receive()
 		if err != nil {
-			fmt.Errorf("can't receieve: %w", err)
+			fmt.Println(fmt.Errorf("can't receieve: %w", err))
 			return
 		}
 	}()
@@ -42,7 +42,7 @@ func main() {
 	go func() {
 		err := client.Send()
 		if err != nil {
-			fmt.Errorf("can't send: %w", err)
+			fmt.Println(fmt.Errorf("can't send: %w", err))
 			return
 		}
 	}()

@@ -71,8 +71,9 @@ func TestTelnetClient(t *testing.T) {
 		require.NoError(t, err)
 
 		client, err := NewTelnetClient("127.0.0.1:9000", timeout, nil, out, func() {})
-		require.NoError(t, err)
-		require.Equal(t, "in is nil", client.Connect().Error())
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "in is nil")
+		require.Nil(t, client)
 	})
 
 	t.Run("out is nil", func(t *testing.T) {
@@ -82,8 +83,9 @@ func TestTelnetClient(t *testing.T) {
 		require.NoError(t, err)
 
 		client, err := NewTelnetClient("127.0.0.1:9000", timeout, ioutil.NopCloser(in), nil, func() {})
-		require.NoError(t, err)
-		require.Equal(t, "out is nil", client.Connect().Error())
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "out is nil")
+		require.Nil(t, client)
 	})
 
 	t.Run("EOF", func(t *testing.T) {

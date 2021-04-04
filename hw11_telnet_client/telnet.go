@@ -25,13 +25,23 @@ type telnetClient struct {
 	cancel  context.CancelFunc
 }
 
+func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer, cancel context.CancelFunc) (TelnetClient, error) {
+	if in == nil {
+		return nil, errors.New("in is nil")
+	}
+	if out == nil {
+		return nil, errors.New("out is nil")
+	}
+	return &telnetClient{
+		address: address,
+		timeout: timeout,
+		in:      in,
+		out:     out,
+		cancel:  cancel,
+	}, nil
+}
+
 func (t *telnetClient) Connect() error {
-	if t.in == nil {
-		return errors.New("in is nil")
-	}
-	if t.out == nil {
-		return errors.New("out is nil")
-	}
 	conn, err := net.DialTimeout("tcp", t.address, t.timeout)
 	if err != nil {
 		return fmt.Errorf("cannot connect: %w", err)
@@ -58,14 +68,4 @@ func (t *telnetClient) Receive() error {
 
 func (t *telnetClient) Close() error {
 	return t.conn.Close()
-}
-
-func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer, cancel context.CancelFunc) TelnetClient {
-	return &telnetClient{
-		address: address,
-		timeout: timeout,
-		in:      in,
-		out:     out,
-		cancel:  cancel,
-	}
 }

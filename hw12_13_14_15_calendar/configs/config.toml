@@ -1,5 +1,14 @@
 [logger]
 level = "INFO"
+path = "./logrus.log"
 
-# TODO
-# ...
+[server]
+host = "localhost"
+port = "8080"
+
+[db]
+user = "test"
+password = "test"
+host = "localhost"
+port = 5432
+name = "calendar_db"

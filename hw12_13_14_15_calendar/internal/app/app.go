@@ -2,22 +2,35 @@ package app
 
 import (
 	"context"
+	"time"
+
+	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage"
 )
 
 type App struct {
-	// TODO
+	logger  Logger
+	storage Storage
 }
 
 type Logger interface {
-	// TODO
+	Info(msg string)
+	Error(msg string)
+	Warn(msg string)
+	Debug(msg string)
 }
 
 type Storage interface {
-	// TODO
+	CreateEvent(e storage.Event) error
+	UpdateEvent(e storage.Event) error
+	DeleteEvent(e storage.Event) error
+	GetEvents(startData, endData time.Time) ([]storage.Event, error)
 }
 
 func New(logger Logger, storage Storage) *App {
-	return &App{}
+	return &App{
+		logger:  logger,
+		storage: storage,
+	}
 }
 
 func (a *App) CreateEvent(ctx context.Context, id string, title string) error {

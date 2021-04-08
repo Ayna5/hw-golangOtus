@@ -3,20 +3,19 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
 	"os/signal"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/server/http"
 )
 
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "./configs/config.toml", "Path to configuration file")
 }
 
 func main() {
@@ -27,13 +26,20 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	config, err := NewConfig(configFile)
+	if err != nil {
+		log.Fatalf("can't get config: %v", err)
+	}
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	logg, err := logger.New(config.Logger.Level, config.Logger.Path)
+	if err != nil {
+		log.Fatalf("can't start logger: %v", err)
+	}
 
-	server := internalhttp.NewServer(calendar)
+	// storage := memorystorage.New()
+	// calendar := app.New(logg, storage)
+
+	server := internalhttp.NewServer(config.Server.Host, config.Server.Port, *logg)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

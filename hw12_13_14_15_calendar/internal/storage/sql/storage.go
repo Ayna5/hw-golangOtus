@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
+
 	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage"
 	"github.com/pkg/errors"
-	"log"
-	"time"
 )
 
 type Row struct {
@@ -27,13 +27,9 @@ func New(ctx context.Context, user, password, host, name string, port uint64) (*
 	config := fmt.Sprintf("postgres://%s:%s@%s:%v/%s?sslmode=disable", user, password, host, port, name)
 	db, err := sql.Open("postgres", config)
 	if err != nil {
-		return nil, fmt.Errorf("cannot connect db: %w", err)
+		return nil, errors.Wrap(err, "cannot connect db")
 	}
 
-	err = db.PingContext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("cannot ping context: %w", err)
-	}
 	return &Storage{db: db}, nil
 }
 
@@ -41,6 +37,11 @@ func (s *Storage) Connect(ctx context.Context) error {
 	_, err := s.db.Conn(ctx)
 	if err != nil {
 		return err
+	}
+
+	err = s.db.PingContext(ctx)
+	if err != nil {
+		return errors.Wrap(err, "cannot ping context")
 	}
 	return nil
 }
@@ -120,10 +121,14 @@ func (s *Storage) GetEvents(startData time.Time, endData time.Time) ([]Row, erro
 	var row Row
 	var rows []Row
 	for events.Next() {
-		if err := events.Scan(&row.ID, &row.Title, &row.StartDate, &row.EndDate, &row.Description, &row.OwnerID, &row.RemindIn); err != nil {
-			log.Fatal(err)
+		if err = events.Scan(&row.ID, &row.Title, &row.StartDate, &row.EndDate, &row.Description, &row.OwnerID, &row.RemindIn); err != nil {
+			return nil, errors.Wrap(err, "cannot scan")
 		}
 		rows = append(rows, row)
 	}
+	if err == events.Err() { //nolint:errorlint
+		return nil, errors.Wrap(err, "error")
+	}
+
 	return rows, nil
 }

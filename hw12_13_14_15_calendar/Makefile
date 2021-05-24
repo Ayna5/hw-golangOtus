@@ -1,8 +1,13 @@
 BIN := "./bin/calendar"
 DOCKER_IMG="calendar:develop"
+PROTOPATH:=$(GOPATH)/src/github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/api
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
+
+generate:
+	mkdir -p pkg/calendar
+	protoc --proto_path=$(GOPATH)/src --go_out=. --go-grpc_out=. $(PROTOPATH)/EventService.proto
 
 build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
@@ -31,4 +36,4 @@ install-lint-deps:
 lint: install-lint-deps
 	golangci-lint run ./...
 
-.PHONY: build run build-img run-img version test lint
+.PHONY: build run build-img run-img version test lint generate

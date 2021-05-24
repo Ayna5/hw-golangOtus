@@ -5,26 +5,25 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage"
 )
 
 type Storage struct {
-	mu sync.RWMutex
+	mu     sync.RWMutex
 	events map[string]*storage.Event
 }
 
 func New() *Storage {
-	return &Storage{}
+	return &Storage{
+		events: make(map[string]*storage.Event),
+	}
 }
 
 func (s *Storage) CreateEvent(e storage.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.events[e.ID] != nil {
-		logrus.Info("event %s already exist", e.ID)
+	if len(s.events) != 0 || s.events[e.ID] != nil {
 		return errors.New("event already exist")
 	}
 
@@ -37,7 +36,6 @@ func (s *Storage) UpdateEvent(e storage.Event) error {
 	defer s.mu.Unlock()
 
 	if s.events[e.ID] == nil {
-		logrus.Info("event %s not found", e.ID)
 		return errors.New("event not found")
 	}
 
@@ -50,7 +48,6 @@ func (s *Storage) DeleteEvent(e storage.Event) error {
 	defer s.mu.Unlock()
 
 	if s.events[e.ID] == nil {
-		logrus.Info("event %s not found", e.ID)
 		return errors.New("event not found")
 	}
 
@@ -58,14 +55,14 @@ func (s *Storage) DeleteEvent(e storage.Event) error {
 	return nil
 }
 
-func (s *Storage) GetEvents(startData time.Time, endData time.Time) ([]storage.Event, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *Storage) GetEvents(startData time.Time, endData time.Time) ([]*storage.Event, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	var events []storage.Event
+	var events []*storage.Event
 	for _, event := range s.events {
-		if event.StartData.Second() >= startData.Second() && event.EndData.Second() <= endData.Second() {
-			events = append(events, *event)
+		if event.StartData.After(startData) && event.EndData.Before(endData) {
+			events = append(events, event)
 		}
 	}
 	return events, nil

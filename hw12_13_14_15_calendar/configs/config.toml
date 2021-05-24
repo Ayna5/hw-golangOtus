@@ -3,8 +3,8 @@ level = "INFO"
 path = "./logrus.log"
 
 [server]
-host = "localhost"
-port = "8080"
+http = ":8080"
+grpc = ":14545"
 
 [db]
 user = "test"

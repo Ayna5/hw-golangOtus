@@ -101,7 +101,8 @@ func (s *Storage) DeleteEvent(e storage.Event) error {
 
 func (s *Storage) GetEvents(startData time.Time, endData time.Time) ([]Row, error) {
 	events, err := s.db.Query(
-		`SELECT id, 
+		`SELECT 
+       			id, 
        			title, 
        			start_date, 
     		    end_date, 

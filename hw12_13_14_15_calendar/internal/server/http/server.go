@@ -28,7 +28,7 @@ func NewServer(host string, log logger.Logger, api *app.App) *Server {
 	}
 }
 
-func (s *Server) Start(ctx context.Context) error {
+func (s *Server) Route() *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/hello", s.helloWorld).Methods("GET")
 	router.HandleFunc("/create", s.createEvent).Methods("POST")
@@ -43,12 +43,16 @@ func (s *Server) Start(ctx context.Context) error {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
+
+	return router
+}
+
+func (s *Server) Start(ctx context.Context) error {
 	err := s.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return errors.Wrap(err, "start server error")
 	}
 
-	<-ctx.Done()
 	return nil
 }
 

@@ -1,0 +1,8 @@
+time="2021-05-26T02:01:29+04:00" level=info msg="calendar is running..."
+time="2021-05-26T02:02:40+04:00" level=error msg="failed to stop http server: server is nil"
+time="2021-05-26T02:02:46+04:00" level=info msg="calendar is running..."
+time="2021-05-26T02:02:50+04:00" level=error msg="failed to stop http server: server is nil"
+time="2021-05-26T02:02:50+04:00" level=error msg="failed to start http server: start server error: listen tcp :8080: bind: address already in use"
+time="2021-05-26T02:05:34+04:00" level=info msg="calendar is running..."
+time="2021-05-26T02:05:41+04:00" level=error msg="failed to stop http server: server is nil"
+time="2021-05-26T02:05:41+04:00" level=error msg="failed to start http server: start server error: listen tcp :8080: bind: address already in use"

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage"
@@ -35,24 +34,24 @@ func New(logger Logger, storage Storage) *App {
 
 func (a *App) CreateEvent(e storage.Event) error {
 	if err := a.storage.CreateEvent(e); err != nil {
-		a.logger.Error("cannot create event error")
-		return fmt.Errorf("cannot create event: %w", err)
+		a.logger.Error(err.Error())
+		return err
 	}
 	return nil
 }
 
 func (a *App) UpdateEvent(e storage.Event) error {
 	if err := a.storage.UpdateEvent(e); err != nil {
-		a.logger.Error("cannot update event error")
-		return fmt.Errorf("cannot update event: %w", err)
+		a.logger.Error(err.Error())
+		return err
 	}
 	return nil
 }
 
 func (a *App) DeleteEvent(e storage.Event) error {
 	if err := a.storage.DeleteEvent(e); err != nil {
-		a.logger.Error("cannot delete event error")
-		return fmt.Errorf("cannot delete event: %w", err)
+		a.logger.Error(err.Error())
+		return err
 	}
 	return nil
 }
@@ -60,8 +59,8 @@ func (a *App) DeleteEvent(e storage.Event) error {
 func (a *App) GetEvents(startData, endData time.Time) ([]*storage.Event, error) {
 	events, err := a.storage.GetEvents(startData, endData)
 	if err != nil {
-		a.logger.Error("cannot get events error")
-		return nil, fmt.Errorf("cannot get events: %w", err)
+		a.logger.Error(err.Error())
+		return nil, err
 	}
 	return events, nil
 }

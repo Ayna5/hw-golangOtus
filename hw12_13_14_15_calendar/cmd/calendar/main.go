@@ -3,20 +3,22 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
 	"os/signal"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/app"
+	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/logger"
+	grpc2 "github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/server/grpc"
+	internalhttp "github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/server/http"
+	memorystorage "github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage/memory"
 )
 
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "./configs/config.toml", "Path to configuration file")
 }
 
 func main() {
@@ -27,13 +29,27 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	config, err := NewConfig(configFile)
+	if err != nil {
+		log.Fatalf("can't get config: %v", err)
+	}
+
+	logg, err := logger.New(config.Logger.Level, config.Logger.Path)
+	if err != nil {
+		log.Fatalf("can't start logger: %v", err)
+	}
 
 	storage := memorystorage.New()
 	calendar := app.New(logg, storage)
 
-	server := internalhttp.NewServer(calendar)
+	grpc, err := grpc2.NewServer(logg, calendar, config.Server.Grpc)
+	if err != nil {
+		log.Fatal("cannot init grpc server")
+	}
+	defer grpc.Stop() //nolint:errcheck
+
+	server := internalhttp.NewServer(config.Server.HTTP, *logg, calendar)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -45,18 +61,25 @@ func main() {
 		signal.Stop(signals)
 		cancel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+		ctx, cancel = context.WithTimeout(context.Background(), time.Second*3)
 		defer cancel()
 
-		if err := server.Stop(ctx); err != nil {
+		if err = grpc.Stop(); err != nil {
+			logg.Error("cannot close connection: " + err.Error())
+		}
+		if err = server.Stop(ctx); err != nil {
 			logg.Error("failed to stop http server: " + err.Error())
 		}
 	}()
 
 	logg.Info("calendar is running...")
+	if err = grpc.Start(); err != nil {
+		logg.Error("failed to start grpc server: " + err.Error())
+		defer cancel()
+	}
 
-	if err := server.Start(ctx); err != nil {
+	if err = server.Start(ctx); err != nil {
 		logg.Error("failed to start http server: " + err.Error())
-		os.Exit(1)
+		defer cancel()
 	}
 }

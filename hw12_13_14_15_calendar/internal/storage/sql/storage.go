@@ -1,12 +1,14 @@
 package sqlstorage
 
-import (
+import ( //nolint:gci
 	"context"
 	"database/sql"
 	"fmt"
 	"time"
 
-	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage"
+	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage" //nolint:gci
+	// driver postgres.
+	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 )
 
@@ -50,10 +52,9 @@ func (s *Storage) Close(ctx context.Context) error {
 	return s.db.Close()
 }
 
-func (s *Storage) NewEvent(e storage.Event) error {
+func (s *Storage) CreateEvent(e storage.Event) error {
 	_, err := s.db.Exec(
-		`INSERT INTO event (title, start_date, end_date, description, owner_id, remind_in)`+
-			` VALUES $1, $2, $3, $4, $5, $6 RETURNING id`,
+		`INSERT INTO event (title, start_date, end_date, description, owner_id, remind_in) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
 		e.Title,
 		e.StartData,
 		e.EndData,
@@ -99,9 +100,11 @@ func (s *Storage) DeleteEvent(e storage.Event) error {
 	return nil
 }
 
-func (s *Storage) GetEvents(startData time.Time, endData time.Time) ([]Row, error) {
-	events, err := s.db.Query(
-		`SELECT id, 
+func (s *Storage) GetEvents(ctx context.Context, startData time.Time, endData time.Time) ([]storage.Event, error) {
+	events, err := s.db.QueryContext(
+		ctx,
+		`SELECT 
+       			id, 
        			title, 
        			start_date, 
     		    end_date, 
@@ -118,15 +121,15 @@ func (s *Storage) GetEvents(startData time.Time, endData time.Time) ([]Row, erro
 	}
 	defer events.Close()
 
-	var row Row
-	var rows []Row
+	var row storage.Event
+	var rows []storage.Event
 	for events.Next() {
-		if err = events.Scan(&row.ID, &row.Title, &row.StartDate, &row.EndDate, &row.Description, &row.OwnerID, &row.RemindIn); err != nil {
+		if err = events.Scan(&row.ID, &row.Title, &row.StartData, &row.EndData, &row.Description, &row.OwnerID, &row.RemindIn); err != nil {
 			return nil, errors.Wrap(err, "cannot scan")
 		}
 		rows = append(rows, row)
 	}
-	if err == events.Err() { //nolint:errorlint
+	if err == events.Err() && err != nil { //nolint:errorlint
 		return nil, errors.Wrap(err, "error")
 	}
 

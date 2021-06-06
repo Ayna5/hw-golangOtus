@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/app"
@@ -13,12 +14,13 @@ import (
 	grpc2 "github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "./configs/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "./configs/calendar/config.toml", "Path to configuration file")
 }
 
 func main() {
@@ -39,19 +41,27 @@ func main() {
 		log.Fatalf("can't start logger: %v", err)
 	}
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	var calendar *app.App
+	if config.DB.Mem {
+		storage := memorystorage.New()
+		calendar = app.New(logg, storage)
+	} else {
+		storage, err := sqlstorage.New(ctx, config.DB.User, config.DB.Password, config.DB.Host, config.DB.Name, config.DB.Port)
+		if err != nil {
+			logg.Error(err.Error())
+		}
+		calendar = app.New(logg, storage)
+	}
 
 	grpc, err := grpc2.NewServer(logg, calendar, config.Server.Grpc)
 	if err != nil {
-		log.Fatal("cannot init grpc server")
+		log.Fatal("cannot init grpc server") //nolint:gocritic
 	}
 	defer grpc.Stop() //nolint:errcheck
 
 	server := internalhttp.NewServer(config.Server.HTTP, *logg, calendar)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	go func() {
 		signals := make(chan os.Signal, 1)
@@ -68,18 +78,26 @@ func main() {
 			logg.Error("cannot close connection: " + err.Error())
 		}
 		if err = server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+			logg.Error("failed to stop query.http server: " + err.Error())
 		}
 	}()
 
 	logg.Info("calendar is running...")
-	if err = grpc.Start(); err != nil {
-		logg.Error("failed to start grpc server: " + err.Error())
-		defer cancel()
-	}
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	if err = server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		defer cancel()
-	}
+	go func() {
+		defer wg.Done()
+		if err = grpc.Start(); err != nil {
+			logg.Error("failed to start grpc server: " + err.Error())
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if err = server.Start(ctx); err != nil {
+			logg.Error("failed to start query.http server: " + err.Error())
+		}
+	}()
+	wg.Wait()
 }

@@ -1,0 +1,21 @@
+[mq]
+uri = "amqp://guest:guest@localhost:5672"
+exchangeName = "exchange"
+exchangeType = "direct"
+routingKey = "key"
+body = "body"
+reliable = true
+queue = "queue"
+tag = "consumer-tag"
+interval = 30
+
+[logger]
+level = "INFO"
+path = "./scheduler.log"
+
+[db]
+user = "test"
+password = "test"
+host = "localhost"
+port = 5432
+name = "calendar"

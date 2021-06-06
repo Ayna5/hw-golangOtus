@@ -1,7 +1,8 @@
 package memorystorage
 
 import (
-	"errors"
+	"context"
+	"strconv"
 	"sync"
 	"time"
 
@@ -10,12 +11,12 @@ import (
 
 type Storage struct {
 	mu     sync.RWMutex
-	events map[string]*storage.Event
+	events map[string]storage.Event
 }
 
 func New() *Storage {
 	return &Storage{
-		events: make(map[string]*storage.Event),
+		events: make(map[string]storage.Event),
 	}
 }
 
@@ -23,11 +24,11 @@ func (s *Storage) CreateEvent(e storage.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if len(s.events) != 0 || s.events[e.ID] != nil {
-		return errors.New("event already exist")
-	}
+	id := len(s.events)
+	id++
+	e.ID = strconv.Itoa(id)
 
-	s.events[e.ID] = &e
+	s.events[e.ID] = e
 	return nil
 }
 
@@ -35,11 +36,7 @@ func (s *Storage) UpdateEvent(e storage.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.events[e.ID] == nil {
-		return errors.New("event not found")
-	}
-
-	s.events[e.ID] = &e
+	s.events[e.ID] = e
 	return nil
 }
 
@@ -47,21 +44,17 @@ func (s *Storage) DeleteEvent(e storage.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.events[e.ID] == nil {
-		return errors.New("event not found")
-	}
-
 	delete(s.events, e.ID)
 	return nil
 }
 
-func (s *Storage) GetEvents(startData time.Time, endData time.Time) ([]*storage.Event, error) {
+func (s *Storage) GetEvents(ctx context.Context, startData time.Time, endData time.Time) ([]storage.Event, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	var events []*storage.Event
+	var events []storage.Event
 	for _, event := range s.events {
-		if event.StartData.After(startData) && event.EndData.Before(endData) {
+		if event.StartData.Unix() >= startData.Unix() && event.EndData.Unix() <= endData.Unix() {
 			events = append(events, event)
 		}
 	}

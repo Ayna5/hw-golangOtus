@@ -13,7 +13,7 @@ import (
 func (a *Server) CreateEvent(ctx context.Context, req *calendar_pb.CreateEventRequest) (*calendar_pb.CreateEventResponse, error) { //nolint:stylecheck
 	event := convertToStorageEvent(req.Event)
 	if err := a.api.CreateEvent(event); err != nil {
-		return nil, fmt.Errorf("cannot create event: %w", err)
+		return nil, err
 	}
 	return &calendar_pb.CreateEventResponse{}, nil
 }
@@ -21,22 +21,22 @@ func (a *Server) CreateEvent(ctx context.Context, req *calendar_pb.CreateEventRe
 func (a *Server) UpdateEvent(ctx context.Context, req *calendar_pb.UpdateEventRequest) (*calendar_pb.UpdateEventResponse, error) {
 	event := convertToStorageEvent(req.Event)
 	if err := a.api.UpdateEvent(event); err != nil {
-		return nil, fmt.Errorf("cannot update event: %w", err)
+		return nil, err
 	}
 	return &calendar_pb.UpdateEventResponse{}, nil
 }
 
 func (a *Server) GetEvents(ctx context.Context, req *calendar_pb.GetEventsRequest) (*calendar_pb.GetEventsResponse, error) {
-	events, err := a.api.GetEvents(req.StartData.AsTime(), req.EndData.AsTime())
+	events, err := a.api.GetEvents(ctx, req.StartData.AsTime(), req.EndData.AsTime())
 	if err != nil {
 		return nil, fmt.Errorf("cannot get events: %w", err)
 	}
 	var newEvents []*calendar_pb.Event //nolint:prealloc
 	for _, val := range events {
 		var newEvent *calendar_pb.Event
-		newEvent, err = convertToPBEvent(*val)
+		newEvent, err = convertToPBEvent(val)
 		if err != nil {
-			return nil, fmt.Errorf("cannot convert to event: %w", err)
+			return nil, err
 		}
 		newEvents = append(newEvents, newEvent)
 	}
@@ -46,7 +46,7 @@ func (a *Server) GetEvents(ctx context.Context, req *calendar_pb.GetEventsReques
 func (a *Server) DeleteEvent(ctx context.Context, req *calendar_pb.DeleteEventRequest) (*calendar_pb.DeleteEventResponse, error) {
 	event := convertToStorageEvent(req.Event)
 	if err := a.api.DeleteEvent(event); err != nil {
-		return nil, fmt.Errorf("cannot delete event: %w", err)
+		return nil, err
 	}
 	return &calendar_pb.DeleteEventResponse{}, nil
 }

@@ -1,4 +1,4 @@
-BIN := "./bin/calendar"
+BIN := "./bin"
 DOCKER_IMG="calendar:develop"
 PROTOPATH:=$(GOPATH)/src/github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/api
 
@@ -10,10 +10,14 @@ generate:
 	protoc --proto_path=$(GOPATH)/src --go_out=. --go-grpc_out=. $(PROTOPATH)/EventService.proto
 
 build:
-	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
+	go build -v -o $(BIN)/calendar -ldflags "$(LDFLAGS)" ./cmd/calendar
+	go build -v -o $(BIN)/scheduler -ldflags "$(LDFLAGS)" ./cmd/scheduler
+	go build -v -o $(BIN)/sender -ldflags "$(LDFLAGS)" ./cmd/sender
 
 run: build
-	$(BIN) -config ./configs/config.toml
+	$(BIN)/calendar -config ./configs/calendar/config.toml
+	$(BIN)/scheduler -config ./configs/sheduler/config.toml
+	$(BIN)/sender -config ./configs/sender/config.toml
 
 build-img:
 	docker build \

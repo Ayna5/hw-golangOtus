@@ -31,6 +31,7 @@ type DBConf struct {
 	Host     string
 	Port     uint64
 	Name     string
+	Mem      bool
 }
 
 type MQ struct {

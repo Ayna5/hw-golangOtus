@@ -1,0 +1,65 @@
+GET /hello
+Host: {{host}}
+Accept: application/json
+Content-Type: application/json
+
+{
+}
+
+###
+
+POST /create
+Host: {{host}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "title": "event1",
+  "startData": "2021-06-02T20:50:00Z",
+  "endData": "2021-12-30T19:10:25Z",
+  "description": "event is number 1",
+  "ownerId": "12",
+  "remindIn": "2"
+}
+
+###
+
+POST /update
+Host: {{host}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "id": "4",
+  "title": "eventNew",
+  "startData": "2021-06-02T03:24:00Z",
+  "endData": "2021-12-30T19:10:25Z",
+  "description": "event is new",
+  "ownerId": "12",
+  "remindIn": "2"
+}
+
+###
+
+GET /get
+Host: {{host}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "startData": "2021-05-30T09:00:00Z",
+  "endData": "2021-12-30T19:10:25Z"
+}
+
+###
+
+POST /delete
+Host: {{host}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "id": "1"
+}
+
+###

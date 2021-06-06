@@ -1,45 +1,58 @@
 package rabbitmq
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/configs"
+	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/logger"
+	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage"
 	"github.com/streadway/amqp"
 )
 
 type Consumer struct {
-	cfg     configs.MQ
-	conn    *amqp.Connection
-	channel *amqp.Channel
-	queue   amqp.Queue
+	ctx      context.Context
+	log      *logger.Logger
+	cfg      configs.MQ
+	conn     *amqp.Connection
+	channel  *amqp.Channel
+	delivery <-chan amqp.Delivery //nolint:structcheck,unused
 }
 
-func NewConsumer(cfg configs.MQ) (*Consumer, error) {
+func NewConsumer(ctx context.Context, cfg configs.MQ, log *logger.Logger) (*Consumer, error) {
 	conn, err := amqp.Dial(cfg.URI)
 	if err != nil {
 		return nil, fmt.Errorf("cannot connect consumer: %w", err)
 	}
+	amqpChannel, err := conn.Channel()
+	if err != nil {
+		return nil, fmt.Errorf("cannot create a amqpChannel: %w", err)
+	}
 	return &Consumer{
-		cfg:  cfg,
-		conn: conn,
+		ctx:     ctx,
+		log:     log,
+		cfg:     cfg,
+		channel: amqpChannel,
+		conn:    conn,
 	}, nil
 }
 
-func (c *Consumer) CloseConn() error {
+func (c *Consumer) Close() error {
 	if err := c.conn.Close(); err != nil {
 		return fmt.Errorf("cannot close connection: %w", err)
+	}
+	if err := c.channel.Close(); err != nil {
+		return fmt.Errorf("cannot close channel: %w", err)
 	}
 
 	return nil
 }
 
-func (c *Consumer) OpenChannel() error {
+func (c *Consumer) OpenChannel() (<-chan amqp.Delivery, error) {
 	var err error
-	c.channel, err = c.conn.Channel()
-	if err != nil {
-		return fmt.Errorf("cannot open channel: %w", err)
-	}
 	if err = c.channel.ExchangeDeclare(
 		c.cfg.ExchangeName,
 		c.cfg.ExchangeType,
@@ -49,9 +62,9 @@ func (c *Consumer) OpenChannel() error {
 		false,
 		nil,
 	); err != nil {
-		return fmt.Errorf("cannot exchange declare: %w", err)
+		return nil, fmt.Errorf("cannot exchange declare: %w", err)
 	}
-	c.queue, err = c.channel.QueueDeclare(
+	queue, err := c.channel.QueueDeclare(
 		c.cfg.Queue,
 		true,
 		false,
@@ -60,24 +73,23 @@ func (c *Consumer) OpenChannel() error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("cannot queue declare: %w", err)
+		return nil, fmt.Errorf("cannot queue declare: %w", err)
+	}
+	err = c.channel.Qos(1, 0, false)
+	if err != nil {
+		return nil, fmt.Errorf("could not configure QoS: %w", err)
 	}
 	if err = c.channel.QueueBind(
-		c.queue.Name,
+		queue.Name,
 		c.cfg.RoutingKey,
 		c.cfg.ExchangeName,
 		false,
 		nil,
 	); err != nil {
-		return fmt.Errorf("cannot queue bind: %w", err)
+		return nil, fmt.Errorf("cannot queue bind: %w", err)
 	}
-
-	return nil
-}
-
-func (c *Consumer) ReadMsg() (configs.MQNotification, error) {
 	deliveries, err := c.channel.Consume(
-		c.queue.Name,
+		queue.Name,
 		c.cfg.Tag,
 		false,
 		false,
@@ -86,23 +98,28 @@ func (c *Consumer) ReadMsg() (configs.MQNotification, error) {
 		nil,
 	)
 	if err != nil {
-		return configs.MQNotification{}, fmt.Errorf("cannot consume channel: %w", err)
-	}
-	var event configs.MQNotification
-	for d := range deliveries {
-		if err = json.Unmarshal(d.Body, &event); err != nil {
-			continue
-		}
-		_ = d.Ack(false)
+		c.log.Error("cannot consume channel: " + err.Error())
+		return nil, fmt.Errorf("cannot consume channel: %w", err)
 	}
 
-	return event, nil
+	return deliveries, nil
 }
 
-func (c *Consumer) CloseChannel() error {
-	if err := c.channel.Close(); err != nil {
-		return fmt.Errorf("cannot close channel: %w", err)
-	}
+func (c *Consumer) ReadMsg(delivery <-chan amqp.Delivery, done chan error) {
+	var e storage.Event
+	c.log.Info("Consumer ready, PID: " + strconv.Itoa(os.Getpid()))
+	for d := range delivery {
+		c.log.Info("Received a message: " + string(d.Body))
+		if err := json.Unmarshal(d.Body, &e); err != nil {
+			c.log.Error("unmarshal error for event: " + e.ID + " " + err.Error())
+			continue
+		}
 
-	return nil
+		if err := d.Ack(false); err != nil {
+			c.log.Error("Error acknowledging message : " + err.Error())
+		} else {
+			c.log.Info("Acknowledged message")
+		}
+	}
+	done <- nil
 }

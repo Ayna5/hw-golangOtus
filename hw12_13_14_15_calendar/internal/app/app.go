@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"time"
 
 	"github.com/Ayna5/hw-golangOtus/hw12_13_14_15_calendar/internal/storage"
@@ -22,7 +23,7 @@ type Storage interface {
 	CreateEvent(e storage.Event) error
 	UpdateEvent(e storage.Event) error
 	DeleteEvent(e storage.Event) error
-	GetEvents(startData, endData time.Time) ([]*storage.Event, error)
+	GetEvents(ctx context.Context, startData, endData time.Time) ([]storage.Event, error)
 }
 
 func New(logger Logger, storage Storage) *App {
@@ -56,8 +57,8 @@ func (a *App) DeleteEvent(e storage.Event) error {
 	return nil
 }
 
-func (a *App) GetEvents(startData, endData time.Time) ([]*storage.Event, error) {
-	events, err := a.storage.GetEvents(startData, endData)
+func (a *App) GetEvents(ctx context.Context, startData, endData time.Time) ([]storage.Event, error) {
+	events, err := a.storage.GetEvents(ctx, startData, endData)
 	if err != nil {
 		a.logger.Error(err.Error())
 		return nil, err

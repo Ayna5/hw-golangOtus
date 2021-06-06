@@ -28,11 +28,9 @@ func newTestServer(t *testing.T) *httptest.Server {
 
 	storage := memorystorage.New()
 	a := app.New(log, storage)
-	api := NewServer(":5555", *log, a)
-	router := api.Route()
-	require.NoError(t, err)
+	api := NewServer("", *log, a)
 
-	return httptest.NewServer(router)
+	return httptest.NewServer(api.server.Handler)
 }
 
 func TestServerHTTP(t *testing.T) {

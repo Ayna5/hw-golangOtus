@@ -7,15 +7,15 @@ body = "body"
 reliable = true
 queue = "queue"
 tag = "consumer-tag"
-interval = 5
+interval = 30
 
 [logger]
 level = "INFO"
-path = "./sheduler.log"
+path = "./scheduler.log"
 
 [db]
 user = "test"
 password = "test"
 host = "localhost"
 port = 5432
-name = "calendar_db"
+name = "calendar"

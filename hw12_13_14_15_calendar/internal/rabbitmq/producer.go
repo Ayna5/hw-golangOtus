@@ -19,15 +19,23 @@ func NewProducer(cfg configs.MQ) (*Producer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot connect producer: %w", err)
 	}
+	amqpChannel, err := conn.Channel()
+	if err != nil {
+		return nil, fmt.Errorf("cannot create a amqpChannel: %w", err)
+	}
 	return &Producer{
-		cfg:  cfg,
-		conn: conn,
+		cfg:     cfg,
+		conn:    conn,
+		channel: amqpChannel,
 	}, nil
 }
 
-func (p *Producer) CloseConn() error {
+func (p *Producer) Close() error {
 	if err := p.conn.Close(); err != nil {
 		return fmt.Errorf("cannot close connection: %w", err)
+	}
+	if err := p.channel.Close(); err != nil {
+		return fmt.Errorf("cannot close channel: %w", err)
 	}
 
 	return nil
@@ -49,14 +57,6 @@ func (p *Producer) OpenChannel() error {
 		nil,
 	); err != nil {
 		return fmt.Errorf("cannot exchange declare: %w", err)
-	}
-
-	return nil
-}
-
-func (p *Producer) CloseChannel() error {
-	if err := p.channel.Close(); err != nil {
-		return fmt.Errorf("cannot close channel: %w", err)
 	}
 
 	return nil
